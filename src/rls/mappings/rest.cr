@@ -43,4 +43,22 @@ module RLS::REST
       name: {type: String, key: "tierName"}
     )
   end
+
+  # Stat types to sort by in `REST#leaderboard`
+  enum StatType : UInt8
+    Wins
+    Goals
+    Mvps
+    Saves
+    Shots
+    Assists
+  end
+
+  # Exclusively ranked playlists for use in `REST#leaderboard`
+  enum RankedPlaylist : UInt8
+    Duel         = 10
+    Doubles      = 11
+    SoloStandard = 12
+    Standard     = 13
+  end
 end

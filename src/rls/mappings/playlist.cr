@@ -10,7 +10,7 @@ module RLS
     RankedDoubles      = 11
     RankedSoloStandard = 12
     RankedStandard     = 13
-    MutatorMaship      = 14
+    MutatorMashup      = 14
     SnowDay            = 15
     RocketLabs         = 16
     Hoops              = 17
