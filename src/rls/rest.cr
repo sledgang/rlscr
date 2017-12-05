@@ -10,6 +10,8 @@ module RLS
     USER_AGENT  = "rlscr (https://github.com/z64/rlscr, #{RLS::VERSION})"
     API_BASE    = "https://api.rocketleaguestats.com/v1"
 
+    @last_headers : HTTP::Headers?
+
     # Make a request to the RLS API.
     # TODO: Ratelimiting
     def request(method : String, path : String,
@@ -18,13 +20,39 @@ module RLS
       headers["User-Agent"] = USER_AGENT
       headers["Authorization"] = @key
 
-      response = HTTP::Client.exec(
-        method: method,
-        url: API_BASE + path,
-        headers: headers,
-        body: body,
-        tls: SSL_CONTEXT)
+      request_done = false
+      response = nil
 
+      (@mutex ||= Mutex.new).synchronize do
+        until request_done
+          sleep until_reset if will_be_rate_limited?
+
+          response = HTTP::Client.exec(
+            method: method,
+            url: API_BASE + path,
+            headers: headers,
+            body: body,
+            tls: SSL_CONTEXT)
+
+          @last_headers = response.headers
+
+          begin
+            handle_response(response)
+            request_done = true
+          rescue ex : CodeException
+            if ex.error_code == 429
+              sleep until_reset
+            else
+              raise ex
+            end
+          end
+        end
+      end
+
+      response.not_nil!
+    end
+
+    private def handle_response(response : HTTP::Client::Response)
       unless response.success?
         raise StatusException.new(response) unless response.content_type == "application/json"
 
@@ -37,6 +65,34 @@ module RLS
       end
 
       response
+    end
+
+    private def last_header(key : String)
+      if headers = @last_headers
+        headers[key]?
+      end
+    end
+
+    private def until_reset
+      (last_header("x-rate-limit-reset-remaining") || 0).to_i.milliseconds
+    end
+
+    private def remaining_requests
+      last_header("x-rate-Limit-Remaining").try &.to_i || -1
+    end
+
+    private def rate_limit_reset
+      if str = last_header("x-rate-limit-reset")
+        Time::Format::ISO_8601_DATE_TIME.parse(str)
+      else
+        Time.now
+      end
+    end
+
+    private def will_be_rate_limited?
+      return false unless @last_headers
+      return false if Time.now >= rate_limit_reset
+      remaining_requests.zero?
     end
 
     # Returns the list of active platforms tracked by RLS
