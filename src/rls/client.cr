@@ -7,6 +7,8 @@ module RLS
 
     property player_cache : Memory::Player? = Memory::Player.new
 
+    property leaderboard_cache : Memory::Leaderboard? = Memory::Leaderboard.new
+
     def initialize(@key : String)
     end
 
@@ -54,6 +56,40 @@ module RLS
         results
       else
         super(query)
+      end
+    end
+
+    # Retrieves an array of 100 players sorted by their current season rating
+    #
+    # If the `leaderboard_cache` is present, it will be used to immediately return
+    # a leaderboard, or perform an API request on a cache miss
+    def leaderboard(playlist : REST::RankedPlaylist)
+      if cache = @leaderboard_cache
+        maybe_board = cache.resolve(playlist)
+        if board = maybe_board
+          return board
+        else
+          return cache.cache(playlist, super(playlist))
+        end
+      else
+        super(playlist)
+      end
+    end
+
+    # Retrieves an array of 100 players sorted by their specified stat amount
+    #
+    # If the `leaderboard_cache` is present, it will be used to immediately return
+    # a leaderboard, or perform an API request on a cache miss
+    def leaderboard(type : REST::StatType)
+      if cache = @leaderboard_cache
+        maybe_board = cache.resolve(type)
+        if board = maybe_board
+          return board
+        else
+          return cache.cache(type, super(type))
+        end
+      else
+        super(type)
       end
     end
   end

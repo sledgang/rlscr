@@ -30,5 +30,31 @@ module RLS
         end
       end
     end
+
+    # Cache for leaderboards, which are arrays of players associated
+    # with a particular stat type or game mode. Leaderboards are valid
+    # (server-side) for `EXPIRY_TIME`, as described in the RLS documentation.
+    # TODO: `prune` method
+    class Leaderboard
+      # The duration to hold onto leaderboards for
+      EXPIRY_TIME = 15.minutes
+
+      @data = {} of RLS::REST::StatType | RLS::REST::RankedPlaylist => Tuple(Time, Array(RLS::Player))
+
+      # Stores a leaderboard in the cache
+      def cache(type : RLS::REST::StatType | RLS::REST::RankedPlaylist, players : Array(RLS::Player))
+        @data[type] = {Time.now + EXPIRY_TIME, players}
+        players
+      end
+
+      # Resolves a leaderboard from the cache. Returns `nil` if the stored
+      # leaderboard is due for an update.
+      def resolve(type : RLS::REST::StatType | RLS::REST::RankedPlaylist) : Array(RLS::Player)?
+        if board = @data[type]?
+          return if Time.now > board[0]
+          board[1]
+        end
+      end
+    end
   end
 end
