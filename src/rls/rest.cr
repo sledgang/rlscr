@@ -12,19 +12,31 @@ module RLS
 
     # Make a request to the RLS API.
     # TODO: Ratelimiting
-    # TODO: Error handling
     def request(method : String, path : String,
                 headers : HTTP::Headers = HTTP::Headers.new,
                 body : String? = nil)
       headers["User-Agent"] = USER_AGENT
       headers["Authorization"] = @key
 
-      HTTP::Client.exec(
+      response = HTTP::Client.exec(
         method: method,
         url: API_BASE + path,
         headers: headers,
         body: body,
         tls: SSL_CONTEXT)
+
+      unless response.success?
+        raise StatusException.new(response) unless response.content_type == "application/json"
+
+        begin
+          error = APIError.from_json(response.body)
+        rescue
+          raise StatusException.new(response)
+        end
+        raise CodeException.new(response, error)
+      end
+
+      response
     end
 
     # Returns the list of active platforms tracked by RLS
