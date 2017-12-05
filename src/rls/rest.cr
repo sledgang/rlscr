@@ -168,7 +168,7 @@ module RLS
     # Fetch up to 10 players with one request
     #
     # [API Docs](http://documentation.rocketleaguestats.com/#batch-players)
-    def players(query : Tuple(BatchPlayersPayload))
+    def players(*query)
       players(query.to_a)
     end
 
