@@ -13,7 +13,6 @@ module RLS
     @last_headers : HTTP::Headers?
 
     # Make a request to the RLS API.
-    # TODO: Ratelimiting
     def request(method : String, path : String,
                 headers : HTTP::Headers = HTTP::Headers.new,
                 body : String? = nil)
