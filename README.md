@@ -1,6 +1,11 @@
-# rlscr
+![image](http://imgur.com/ebyJ0pD.jpg)
 
-TODO: Write a description here
+# **rlscr**
+
+Crystal REST API wrapper for [RocketLeagueStats](https://rocketleaguestats.com/)
+
+- [API Documentation](http://documentation.rocketleaguestats.com/)
+- [Request an API key](https://developers.rocketleaguestats.com/)
 
 ## Installation
 
@@ -8,17 +13,18 @@ Add this to your application's `shard.yml`:
 
 ```yaml
 dependencies:
-  rlscr:
+  rls:
     github: z64/rlscr
 ```
 
 ## Usage
 
 ```crystal
-require "rlscr"
-```
+require "rls"
 
-TODO: Write usage instructions here
+client = RLS::Client.new("YOUR_API_KEY")
+client.player("76561197968760517") #=> RLS::Player
+```
 
 ## Contributors
 
