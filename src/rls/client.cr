@@ -2,11 +2,30 @@ require "./rest"
 require "./cache"
 
 module RLS
+  # The client is the main utility for interacting with the RLS API. It
+  # abstracts your API key and caches certain hot API routes. See the
+  # `REST` module for a full description of the API.
+  # ```
+  # client = RLS::Client.new("API_KEY")
+  # puts client.player("76561198034606292") # => RLS::Player
+  # ```
+  #
+  # By default, caching is enabled and is handled in memory with a collection
+  # of hashes. Cached objects have set expiry rules, and once objects expire
+  # the client will perform an HTTP request to update the cache.
+  #
+  # If you want to disable caching:
+  # ```
+  # client.player_cache = nil
+  # client.leaderboard_cache = nil
+  # ```
   class Client
     include REST
 
+    # Cache for `Player` objects
     property player_cache : Memory::Player? = Memory::Player.new
 
+    # Cache for leaderboards, which are arrays of `Player` objects
     property leaderboard_cache : Memory::Leaderboard? = Memory::Leaderboard.new
 
     def initialize(@key : String)
