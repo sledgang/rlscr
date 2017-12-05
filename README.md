@@ -7,6 +7,12 @@ Crystal REST API wrapper for [RocketLeagueStats](https://rocketleaguestats.com/)
 - [API Documentation](http://documentation.rocketleaguestats.com/)
 - [Request an API key](https://developers.rocketleaguestats.com/)
 
+## Features
+
+- Full REST binding
+- Rate limit handling (both preemptive and post-request)
+- Caching of very common routes to reduce API load
+
 ## Installation
 
 Add this to your application's `shard.yml`:
