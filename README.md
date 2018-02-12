@@ -20,7 +20,7 @@ Add this to your application's `shard.yml`:
 ```yaml
 dependencies:
   rls:
-    github: z64/rlscr
+    github: y32/rlscr
 ```
 
 ## Usage
